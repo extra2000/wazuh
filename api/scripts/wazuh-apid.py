@@ -78,8 +78,18 @@ def spawn_authentication_pool():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-def assign_wazuh_ownership(filepath):
-    """Assign ownership to file."""
+def assign_wazuh_ownership(filepath:str):
+    """Create a file if it doesn't exist and assign ownership.
+
+    Parameters
+    ----------
+    filepath : str
+        File to assign ownership.
+
+    """
+    if not os.path.isfile(filepath):
+        f = open(filepath, "w")
+        f.close()
     if os.stat(filepath).st_gid != common.wazuh_gid() or \
         os.stat(filepath).st_uid != common.wazuh_uid():
         os.chown(filepath, common.wazuh_uid(), common.wazuh_gid())
@@ -330,16 +340,28 @@ def set_logging(log_filepath=f'{API_LOG_PATH}', log_level='INFO',
     dict
         Logging configuraction dictionary.
     """
-    handlers = []
+    handlers = {
+        'plainfile': None, 
+        'jsonfile': None,
+    }
     if foreground_mode:
-        handlers.append('console')
+        handlers.update({'console': {}})
     else:
         if 'json' in api_conf['logs']['format']:
-            handlers.append('jsonfile')
+            handlers["jsonfile"] = {
+                'filename': f"{log_filepath}.json",
+                'formatter': 'json',
+                'filters': ['json-filter'],
+            }
         if 'plain' in api_conf['logs']['format']:
-            handlers.append('plainfile')
+            handlers["plainfile"] = {
+                'filename': f"{log_filepath}.log",
+                'formatter': 'log',
+                'filters': ['plain-filter'],
+            }
 
-    if not handlers:
+    hdls = [k for k, v in handlers.items() if isinstance(v, dict)]
+    if not hdls:
         print(f"Configuration error in the API log format: {api_conf['logs']['format']}.")
         sys.exit(1)
 
@@ -391,44 +413,41 @@ def set_logging(log_filepath=f'{API_LOG_PATH}', log_level='INFO',
                 'stream': 'ext://sys.stdout',
                 'filters': ['plain-filter']
             },
-            "plainfile": {
-                'filename': f"{log_filepath}.log",
-                'formatter': 'log',
-                'filters': ['plain-filter'],
-            },
-            "jsonfile": {
-                'filename': f"{log_filepath}.json",
-                'formatter': 'json',
-                'filters': ['json-filter'],
-            }
         },
         "loggers": {
-            "wazuh-api" : {"handlers": handlers, "level": log_level, "propagate": False},
-            "start-stop-api" : {"handlers": handlers, "level": 'INFO', "propagate": False}
+            "wazuh-api" : {"handlers": hdls, "level": log_level, "propagate": False},
+            "start-stop-api" : {"handlers": hdls, "level": 'INFO', "propagate": False}
         }
     }
 
-    for handler in [log_config_dict['handlers']['plainfile'], log_config_dict['handlers']['jsonfile']]:
-        if api_conf['logs']['max_size']['enabled']:
-            max_size = APILoggerSize(api_conf['logs']['max_size']['size']).size
-            handler['class'] = 'wazuh.core.wlogging.SizeBasedFileRotatingHandler'
-            handler['maxBytes'] = max_size
-            handler['backupCount'] = 1
-        else:
-            handler['class'] = 'wazuh.core.wlogging.TimeBasedFileRotatingHandler'
-            handler['when'] = 'midnight'
+    # configure file handlers
+    for handler, d in handlers.items():
+        if d and 'filename' in d:
+            if api_conf['logs']['max_size']['enabled']:
+                max_size = APILoggerSize(api_conf['logs']['max_size']['size']).size
+                d.update({
+                    'class': 'wazuh.core.wlogging.SizeBasedFileRotatingHandler',
+                    'maxBytes' : max_size,
+                    'backupCount' : 1
+                })
+            else:
+                d.update({
+                    'class' : 'wazuh.core.wlogging.TimeBasedFileRotatingHandler',
+                    'when' : 'midnight'
+                })
+            log_config_dict['handlers'][handler] = d
+
+            # set permission on log files
+            assign_wazuh_ownership(d['filename'])
+            os.chmod(d['filename'], 0o660)
 
     # Configure and create the wazuh-api logger first
     logging.config.dictConfig(log_config_dict)
-    assign_wazuh_ownership(log_filepath)
-    os.chmod(log_filepath, 0o660)
     add_debug2_log_level_and_error()
 
     # Configure the uvicorn loggers. They will be created by the uvicorn server.
-    log_config_dict['loggers']['uvicorn'] = {"handlers": handlers, "level": 'WARNING',
-                                                "propagate": False}
-    log_config_dict['loggers']['uvicorn.error'] = {"handlers": handlers, "level": 'WARNING',
-                                                "propagate": False}
+    log_config_dict['loggers']['uvicorn'] = {"handlers": hdls, "level": 'WARNING', "propagate": False}
+    log_config_dict['loggers']['uvicorn.error'] = {"handlers": hdls, "level": 'WARNING', "propagate": False}
     log_config_dict['loggers']['uvicorn.access'] = {'level': 'WARNING'}
 
     return log_config_dict
