@@ -73,9 +73,8 @@ async def unauthorized_error_handler(request: ConnexionRequest,
     """
     problem = {
         "title": "Unauthorized",
-        "type": "about:blank",
     }
-
+    problem.update({'detail': 'No authorization token provided'} if 'token_info' not in request.context else {})
     if request.scope['path'] in {'/security/user/authenticate',
                         '/security/user/authenticate/run_as'} and \
         request.method in {'GET', 'POST'}:
@@ -110,7 +109,6 @@ async def bad_request_error_handler(_: Optional[ConnexionRequest],
 
     problem = {
         "title": 'Bad Request',
-        "type": "about:blank",
     }
     if exc.detail:
         problem['detail'] = exc.detail
@@ -138,18 +136,16 @@ async def http_error_handler(_: Optional[ConnexionRequest],
     """
 
     problem = {
-        "title": 'HTTPException',
-        "type": "about:blank",
+        'title': exc.detail,
+        "detail": f"{exc.status_code}: {exc.detail}" if hasattr(exc, 'detail') else 'HTTPException',
     }
-    if exc.detail:
-        problem['detail'] = exc.detail
     return ConnexionResponse(status_code=exc.status_code,
                              body=json.dumps(problem),
                              content_type=ERROR_CONTENT_TYPE)
 
 
 async def jwt_error_handler(_: Optional[ConnexionRequest] = None,
-                            __: Optional[Exception] = None) -> ConnexionResponse:
+                            exc: Optional[Exception] = None) -> ConnexionResponse:
     """JWTException Error handler.
     
     Parameters
@@ -168,8 +164,7 @@ async def jwt_error_handler(_: Optional[ConnexionRequest] = None,
     """
     problem = {
         "title": "Unauthorized",
-        "type": "about:blank",
-        "detail": "Invalid token"
+        "detail": exc.detail if exc.detail else "No authorization token provided"
     }
 
     return ConnexionResponse(status_code=401,
@@ -213,3 +208,30 @@ async def problem_error_handler(_: Optional[ConnexionRequest],
     return  ConnexionResponse(body=json.dumps(problem),
                               status_code=exc.__dict__['status'],
                               content_type=ERROR_CONTENT_TYPE)
+
+async def content_size_handler(_: Optional[ConnexionRequest] = None,
+                            exc: Optional[Exception] = None) -> ConnexionResponse:
+    """Content size error handler.
+    
+    Parameters
+    ----------
+    _ : ConnexionRequest
+        Incomming request.
+        Unnamed parameter not used.
+    exc: Exception
+        Raised exception.
+        Unnamed parameter not used.
+
+    Returns
+    -------
+    Response
+        Returns status code 413 if the maximum upload file size is exceeded.
+    """
+    problem = {
+        "title": "Content size exceeded.",
+        "detail": str(exc)
+    }
+
+    return ConnexionResponse(status_code=413,
+                             body=json.dumps(problem),
+                             content_type=ERROR_CONTENT_TYPE)

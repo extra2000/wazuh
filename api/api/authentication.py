@@ -85,9 +85,7 @@ def check_user(user: str, password: str, required_scopes=None) -> Union[dict, No
     data = raise_if_exc(pool.submit(asyncio.run, dapi.distribute_function()).result())
 
     if data['result']:
-        return {'sub': user,
-                'active': True
-                }
+        return {'sub': user, 'active': True }
 
 
 # Set JWT settings

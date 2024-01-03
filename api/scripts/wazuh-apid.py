@@ -21,7 +21,9 @@ from connexion.exceptions import Unauthorized, HTTPException, BadRequestProblem,
 from connexion.middleware import MiddlewarePosition
 
 from starlette.middleware.cors import CORSMiddleware
+
 from content_size_limit_asgi import ContentSizeLimitMiddleware
+from content_size_limit_asgi.errors import ContentSizeExceeded
 
 from jose import JWTError
 
@@ -210,20 +212,22 @@ def start(params):
                 )
 
     # Maximum body size that the API can accept (bytes)
-    app.add_middleware(WazuhAccessLoggerMiddleware, MiddlewarePosition.BEFORE_EXCEPTION)
-    app.add_middleware(ContentSizeLimitMiddleware,
-                       max_content_size=api_conf['max_upload_size'])
+    app.add_middleware(WazuhAccessLoggerMiddleware, MiddlewarePosition.BEFORE_VALIDATION)
+    if api_conf['max_upload_size']:
+        app.add_middleware(ContentSizeLimitMiddleware, max_content_size=api_conf['max_upload_size'])
+        app.add_error_handler(ContentSizeExceeded, error_handler.content_size_handler)
+        
     app.add_middleware(SecureHeadersMiddleware)
     app.add_middleware(CheckRateLimitsMiddleware)
     # Enable CORS
     if api_conf['cors']['enabled']:
         app.add_middleware(
-            CORSMiddleware(app=app,
-                           allow_origins=api_conf['cors']['source_route'],
-                           expose_headers=api_conf['cors']['expose_headers'],
-                           allow_headers=api_conf['cors']['allow_headers'],
-                           allow_credentials=api_conf['cors']['allow_credentials']),
-                           MiddlewarePosition.BEFORE_ROUTING
+            CORSMiddleware,
+            position=MiddlewarePosition.BEFORE_EXCEPTION,
+            allow_origins=api_conf['cors']['source_route'],
+            expose_headers=api_conf['cors']['expose_headers'],
+            allow_headers=api_conf['cors']['allow_headers'],
+            allow_credentials=api_conf['cors']['allow_credentials'],
         )
     # Add error handlers to format exceptions
     app.add_error_handler(JWTError, error_handler.jwt_error_handler)
@@ -305,7 +309,7 @@ def add_debug2_log_level_and_error():
     logging.Logger.error = error
 
 
-def set_logging(log_filepath=f'{API_LOG_PATH}.log', log_level='INFO',
+def set_logging(log_filepath=f'{API_LOG_PATH}', log_level='INFO',
                            foreground_mode=False) -> dict():
     """Creates a logging configuration dictionary, configure the wazuh-api logger and
     returns the logging configuration dictionary that will be used in uvicorn logging
@@ -326,8 +330,19 @@ def set_logging(log_filepath=f'{API_LOG_PATH}.log', log_level='INFO',
     dict
         Logging configuraction dictionary.
     """
-    handler = "console" if foreground_mode else "file"
-    json_or_log = 'json' if log_filepath.endswith('.json') else 'log'
+    handlers = []
+    if foreground_mode:
+        handlers.append('console')
+    else:
+        if 'json' in api_conf['logs']['format']:
+            handlers.append('jsonfile')
+        if 'plain' in api_conf['logs']['format']:
+            handlers.append('plainfile')
+
+    if not handlers:
+        print(f"Configuration error in the API log format: {api_conf['logs']['format']}.")
+        sys.exit(1)
+
     log_config_dict = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -354,8 +369,10 @@ def set_logging(log_filepath=f'{API_LOG_PATH}.log', log_level='INFO',
             }
         },
         "filters": {
-            'wazuh-filter': {'()': 'wazuh.core.wlogging.CustomFilter',
-                             'log_type': json_or_log }
+            'plain-filter': {'()': 'wazuh.core.wlogging.CustomFilter',
+                             'log_type': 'log' },
+            'json-filter': {'()': 'wazuh.core.wlogging.CustomFilter',
+                             'log_type': 'json' }
         },
         "handlers": {
             "default": {
@@ -369,31 +386,37 @@ def set_logging(log_filepath=f'{API_LOG_PATH}.log', log_level='INFO',
                 "stream": "ext://sys.stdout"
             },
             "console": {
-                'level': log_level,
                 'formatter': 'log',
                 'class': 'logging.StreamHandler',
                 'stream': 'ext://sys.stdout',
-                'filters': ['wazuh-filter']
+                'filters': ['plain-filter']
             },
-            "file": {
-                'filename': log_filepath,
-                'level': log_level,
-                'formatter': json_or_log,
-                'filters': ['wazuh-filter'],
+            "plainfile": {
+                'filename': f"{log_filepath}.log",
+                'formatter': 'log',
+                'filters': ['plain-filter'],
+            },
+            "jsonfile": {
+                'filename': f"{log_filepath}.json",
+                'formatter': 'json',
+                'filters': ['json-filter'],
             }
         },
         "loggers": {
-            "wazuh-api" : {"handlers": [handler], "level": log_level, "propagate": False} }
+            "wazuh-api" : {"handlers": handlers, "level": log_level, "propagate": False},
+            "start-stop-api" : {"handlers": handlers, "level": 'INFO', "propagate": False}
+        }
     }
 
-    if api_conf['logs']['max_size']['enabled']:
-        max_size = APILoggerSize(api_conf['logs']['max_size']['size']).size
-        log_config_dict['handlers']['file']['class'] = 'wazuh.core.wlogging.SizeBasedFileRotatingHandler'
-        log_config_dict['handlers']['file']['maxBytes'] = max_size
-        log_config_dict['handlers']['file']['backupCount'] = 1
-    else:
-        log_config_dict['handlers']['file']['class'] = 'wazuh.core.wlogging.TimeBasedFileRotatingHandler'
-        log_config_dict['handlers']['file']['when'] = 'midnight'
+    for handler in [log_config_dict['handlers']['plainfile'], log_config_dict['handlers']['jsonfile']]:
+        if api_conf['logs']['max_size']['enabled']:
+            max_size = APILoggerSize(api_conf['logs']['max_size']['size']).size
+            handler['class'] = 'wazuh.core.wlogging.SizeBasedFileRotatingHandler'
+            handler['maxBytes'] = max_size
+            handler['backupCount'] = 1
+        else:
+            handler['class'] = 'wazuh.core.wlogging.TimeBasedFileRotatingHandler'
+            handler['when'] = 'midnight'
 
     # Configure and create the wazuh-api logger first
     logging.config.dictConfig(log_config_dict)
@@ -402,9 +425,9 @@ def set_logging(log_filepath=f'{API_LOG_PATH}.log', log_level='INFO',
     add_debug2_log_level_and_error()
 
     # Configure the uvicorn loggers. They will be created by the uvicorn server.
-    log_config_dict['loggers']['uvicorn'] = {"handlers": [handler], "level": 'WARNING',
+    log_config_dict['loggers']['uvicorn'] = {"handlers": handlers, "level": 'WARNING',
                                                 "propagate": False}
-    log_config_dict['loggers']['uvicorn.error'] = {"handlers": [handler], "level": 'WARNING',
+    log_config_dict['loggers']['uvicorn.error'] = {"handlers": handlers, "level": 'WARNING',
                                                 "propagate": False}
     log_config_dict['loggers']['uvicorn.access'] = {'level': 'WARNING'}
 
@@ -453,14 +476,7 @@ if __name__ == '__main__':
     uvicorn_params['loop'] = 'uvloop'
 
     # Set up logger file
-    if not (api_conf['logs']['format'] in ['plain', 'json']):
-        print(f"Configuration error in the API log format: {api_conf['logs']['format']}.")
-        sys.exit(1)
-    elif api_conf['logs']['format'] == 'json':
-        log_path = f'{API_LOG_PATH}.json'
-    else:
-        log_path = f'{API_LOG_PATH}.log'
-    uvicorn_params['log_config'] = set_logging(log_filepath=log_path,
+    uvicorn_params['log_config'] = set_logging(log_filepath=API_LOG_PATH,
                                                log_level=api_conf['logs']['level'].upper(),
                                                foreground_mode=args.foreground)
     logger = logging.getLogger('wazuh-api')

@@ -39,6 +39,7 @@ xfo = XFrameOptions().deny()
 secure_headers = Secure(server=server, csp=csp, xfo=xfo)
 
 logger = logging.getLogger('wazuh-api')
+start_stop_logger = logging.getLogger('start-stop-api')
 
 ip_stats = dict()
 ip_block = set()
@@ -223,6 +224,6 @@ async def lifespan_handler(_: ConnexionMiddleware):
 
     # Log the initial server startup message.
     msg = f'Listening on {configuration.api_conf["host"]}:{configuration.api_conf["port"]}.'
-    logger.info(msg)
+    start_stop_logger.info(msg)
     yield
-    logger.info('Shutdown wazuh-apid server.')
+    start_stop_logger.info('Shutdown wazuh-apid server.')
