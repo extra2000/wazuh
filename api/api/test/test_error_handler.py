@@ -4,8 +4,8 @@
 
 import json
 from unittest.mock import patch, MagicMock
-import pytest
 from copy import copy
+import pytest
 
 from connexion.exceptions import HTTPException, ProblemException, BadRequestProblem, Unauthorized
 from api.error_handler import _cleanup_detail_field, prevent_bruteforce_attack, jwt_error_handler, \
@@ -69,23 +69,29 @@ def test_middlewares_prevent_bruteforce_attack(stats, request_info, mock_request
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('path, method', [
-    ('/security/user/authenticate', 'GET'),
-    ('/security/user/authenticate', 'POST'),
-    ('/user/authenticate/run_as', 'POST'),
-    ('/agents', 'POST'),
+@pytest.mark.parametrize('path, method, token_info', [
+    ('/security/user/authenticate', 'GET', True),
+    ('/security/user/authenticate', 'POST', False),
+    ('/user/authenticate/run_as', 'POST', True),
+    ('/agents', 'POST', False),
 ])
-async def test_unauthorized_error_handler(path, method, mock_request):
+async def test_unauthorized_error_handler(path, method, token_info, mock_request):
     """Test unauthorized error handler."""
     problem = {
         "title": "Unauthorized",
-        "type": "about:blank",
     }
     mock_request.configure_mock(scope={'path': path})
     mock_request.method = method
     if path in {'/security/user/authenticate', '/security/user/authenticate/run_as'} \
         and method in {'GET', 'POST'}:
         problem['detail'] = "Invalid credentials"
+    else:
+        if token_info:
+            mock_request.context = {'token_info': ''}
+        else:
+            problem['detail'] = 'No authorization token provided'
+            mock_request.context = {}
+
     exc = Unauthorized()
     with patch('api.error_handler.prevent_bruteforce_attack') as mock_pbfa, \
         patch('api.configuration.api_conf', new={'access': {'max_login_attempts': 1000}}):
@@ -105,12 +111,12 @@ async def test_unauthorized_error_handler(path, method, mock_request):
 @pytest.mark.asyncio
 async def test_jwt_error_handler():
     """Test jwt error handler."""
-    response = await jwt_error_handler()
     problem = {
         "title": "Unauthorized",
-        "type": "about:blank",
-        "detail": "Invalid token"
+        "detail": "No authorization token provided"
     }
+    response = await jwt_error_handler(None, None)
+
     body = json.loads(response.body)
     assert body == problem
     assert response.status_code == 401
@@ -118,16 +124,16 @@ async def test_jwt_error_handler():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('detail', [None, 'detail'])
+@pytest.mark.parametrize('detail', [None, 'Custom detail'])
 async def test_http_error_handler(detail):
     """Test http error handler."""
     exc = HTTPException(status_code=401, detail=detail)
-    response = await http_error_handler(None, exc)
     problem = {
-        "title": 'HTTPException',
-        "type": "about:blank",
+        "title": exc.detail,
+        'detail': f"{exc.status_code}: {exc.detail}"
     }
-    problem.update({'detail': detail} if detail else {'detail': 'Unauthorized'})
+    response = await http_error_handler(None, exc)
+
     body = json.loads(response.body)
     assert body == problem
     assert response.status_code == 401
@@ -181,7 +187,6 @@ async def test_bad_request_error_handler(detail):
     """Test bad request error handler."""
     problem = {
         "title": 'Bad Request',
-        "type": "about:blank",
     }
     problem.update({'detail': detail} if detail else {})
 

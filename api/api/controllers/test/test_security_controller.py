@@ -40,13 +40,18 @@ with patch('wazuh.common.wazuh_uid'):
 @pytest.fixture
 def mock_request():
     """fixture to wrap functions with request"""
+
     operation = MagicMock(name="operation")
     operation.method = "post"
     with TestContext(operation=operation):
-        with patch('api.controllers.security_controller.request') as m_req:
+        with patch('api.controllers.security_controller.request', MagicMock) as m_req:
             m_req.json = AsyncMock(side_effect=lambda: {'ctx': ''} )
-            m_req.query_params.get = lambda key, default: None
-            m_req.context = {'token_info': {'sub': 'wazuh', 'run_as': 'manager', 'rbac_policies': {}}}
+            m_req.get = MagicMock(return_value=None)
+            m_req.query_params = MagicMock()
+            m_req.query_params.get = MagicMock(return_value=None)
+            m_req.context = {
+                'token_info': {'sub': 'wazuh', 'run_as': 'manager', 'rbac_policies': {}}
+            }
             yield m_req
 
 
@@ -242,9 +247,7 @@ async def test_get_users(mock_exc, mock_dapi, mock_remove, mock_dfunc, mock_requ
 @patch('api.controllers.security_controller.raise_if_exc', return_value=CustomAffectedItems())
 async def test_edit_run_as(mock_exc, mock_dapi, mock_remove, mock_dfunc, mock_request):
     """Verify 'edit_run_as' endpoint is working as expected."""
-    result = await edit_run_as(
-                               user_id='001',
-                               allow_run_as=False)
+    result = await edit_run_as(user_id='001', allow_run_as=False)
     f_kwargs = {'user_id': '001',
                 'allow_run_as': False
                 }
@@ -273,14 +276,15 @@ async def test_create_user(mock_exc, mock_dapi, mock_remove, mock_dfunc, mock_re
         with patch('api.controllers.security_controller.CreateUserModel.get_kwargs',
                    return_value=AsyncMock()) as mock_getkwargs:
             result = await create_user()
-            mock_dapi.assert_called_once_with(f=security.create_user,
-                                              f_kwargs=mock_remove.return_value,
-                                              request_type='local_master',
-                                              is_async=False,
-                                              logger=ANY,
-                                              wait_for_complete=False,
-                                              rbac_permissions=mock_request.context['token_info']['rbac_policies']
-                                              )
+            mock_dapi.assert_called_once_with(
+                f=security.create_user,
+                f_kwargs=mock_remove.return_value,
+                request_type='local_master',
+                is_async=False,
+                logger=ANY,
+                wait_for_complete=False,
+                rbac_permissions=mock_request.context['token_info']['rbac_policies']
+            )
             mock_exc.assert_called_once_with(mock_dfunc.return_value)
             mock_remove.assert_called_once_with(mock_getkwargs.return_value)
             assert isinstance(result, ConnexionResponse)
@@ -296,16 +300,16 @@ async def test_update_user(mock_exc, mock_dapi, mock_remove, mock_dfunc, mock_re
     with patch('api.controllers.security_controller.Body.validate_content_type'):
         with patch('api.controllers.security_controller.CreateUserModel.get_kwargs',
                    return_value=AsyncMock()) as mock_getkwargs:
-            result = await update_user(
-                                       user_id='001')
-            mock_dapi.assert_called_once_with(f=security.update_user,
-                                              f_kwargs=mock_remove.return_value,
-                                              request_type='local_master',
-                                              is_async=False,
-                                              logger=ANY,
-                                              wait_for_complete=False,
-                                              rbac_permissions=mock_request.context['token_info']['rbac_policies']
-                                              )
+            result = await update_user(user_id='001')
+            mock_dapi.assert_called_once_with(
+                f=security.update_user,
+                f_kwargs=mock_remove.return_value,
+                request_type='local_master',
+                is_async=False,
+                logger=ANY,
+                wait_for_complete=False,
+                rbac_permissions=mock_request.context['token_info']['rbac_policies']
+            )
             mock_exc.assert_called_once_with(mock_dfunc.return_value)
             mock_remove.assert_called_once_with(mock_getkwargs.return_value)
             assert isinstance(result, ConnexionResponse)
@@ -319,21 +323,20 @@ async def test_update_user(mock_exc, mock_dapi, mock_remove, mock_dfunc, mock_re
 @pytest.mark.parametrize('mock_uids', ['001', 'all'])
 async def test_delete_users(mock_exc, mock_dapi, mock_remove, mock_dfunc, mock_uids, mock_request):
     """Verify 'delete_users' endpoint is working as expected."""
-    result = await delete_users(
-                                user_ids=mock_uids)
+    result = await delete_users(user_ids=mock_uids)
     if 'all' in mock_uids:
         mock_uids = None
-    f_kwargs = {'user_ids': mock_uids
-                }
-    mock_dapi.assert_called_once_with(f=security.remove_users,
-                                      f_kwargs=mock_remove.return_value,
-                                      request_type='local_master',
-                                      is_async=False,
-                                      logger=ANY,
-                                      wait_for_complete=False,
-                                      current_user=mock_request.context['token_info']['sub'],
-                                      rbac_permissions=mock_request.context['token_info']['rbac_policies']
-                                      )
+    f_kwargs = {'user_ids': mock_uids}
+    mock_dapi.assert_called_once_with(
+        f=security.remove_users,
+        f_kwargs=mock_remove.return_value,
+        request_type='local_master',
+        is_async=False,
+        logger=ANY,
+        wait_for_complete=False,
+        current_user=mock_request.context['token_info']['sub'],
+        rbac_permissions=mock_request.context['token_info']['rbac_policies']
+    )
     mock_exc.assert_called_once_with(mock_dfunc.return_value)
     mock_remove.assert_called_once_with(f_kwargs)
     assert isinstance(result, ConnexionResponse)
@@ -1017,8 +1020,7 @@ async def test_delete_security_config(mock_exc, mock_dapi, mock_remove, mock_dfu
                return_value=AsyncMock()) as mock_getkwargs:
         with patch('api.controllers.security_controller.security_revoke_tokens', return_value=AsyncMock()):
             result = await delete_security_config()
-            f_kwargs = {'updated_config': mock_getkwargs.return_value
-                        }
+            f_kwargs = {'updated_config': mock_getkwargs.return_value}
             mock_dapi.assert_called_once_with(f=security.update_security_config,
                                               f_kwargs=mock_remove.return_value,
                                               request_type='local_master',

@@ -2,10 +2,13 @@
 # Created by Wazuh, Inc. <info@wazuh.com>.
 # This program is a free software; you can redistribute it and/or modify it under the terms of GPLv2
 
-from typing import Optional
 import json
+
 from connexion.lifecycle import ConnexionRequest, ConnexionResponse
 from connexion import exceptions
+
+from jose import JWTError
+from content_size_limit_asgi.errors import ContentSizeExceeded
 
 from api import configuration
 from api.middlewares import ip_block, ip_stats
@@ -55,15 +58,15 @@ def _cleanup_detail_field(detail: str) -> str:
     return ' '.join(str(detail).replace("\n\n", ". ").replace("\n", "").split())
 
 
-async def unauthorized_error_handler(request: ConnexionRequest, 
-                                     exc: Exception) -> ConnexionResponse:
+async def unauthorized_error_handler(request: ConnexionRequest,
+                                     exc: exceptions.Unauthorized) -> ConnexionResponse:
     """Unauthorized Exception Error handler.
     
     Parameters
     ----------
     request : ConnexionRequest
         Incomming request.
-    exc: Exception
+    exc: Unauthorized
         Raised exception.
 
     Returns
@@ -74,7 +77,6 @@ async def unauthorized_error_handler(request: ConnexionRequest,
     problem = {
         "title": "Unauthorized",
     }
-    problem.update({'detail': 'No authorization token provided'} if 'token_info' not in request.context else {})
     if request.scope['path'] in {'/security/user/authenticate',
                         '/security/user/authenticate/run_as'} and \
         request.method in {'GET', 'POST'}:
@@ -84,12 +86,16 @@ async def unauthorized_error_handler(request: ConnexionRequest,
             request=request,
             attempts=configuration.api_conf['access']['max_login_attempts']
         )
+    else:
+        problem.update({'detail': 'No authorization token provided'} \
+                            if 'token_info' not in request.context \
+                            else {})
     return ConnexionResponse(status_code=exc.status_code,
                              body=json.dumps(problem),
                              content_type=ERROR_CONTENT_TYPE)
 
 
-async def bad_request_error_handler(_: Optional[ConnexionRequest], 
+async def bad_request_error_handler(_: ConnexionRequest,
                                     exc: exceptions.BadRequestProblem) -> ConnexionResponse:
     """Bad Request Exception Error handler.
     
@@ -97,8 +103,8 @@ async def bad_request_error_handler(_: Optional[ConnexionRequest],
     ----------
     _: ConnexionRequest
         Incomming request.
-        Parameter not used.
-    exc: Exception
+        Unnamed parameter not used.
+    exc: BadRequestProblem
         Raised exception.
 
     Returns
@@ -117,7 +123,7 @@ async def bad_request_error_handler(_: Optional[ConnexionRequest],
                              content_type=ERROR_CONTENT_TYPE)
 
 
-async def http_error_handler(_: Optional[ConnexionRequest],
+async def http_error_handler(_: ConnexionRequest,
                              exc: exceptions.HTTPException) -> ConnexionResponse:
     """HTTPError Exception Error handler.
     
@@ -126,7 +132,7 @@ async def http_error_handler(_: Optional[ConnexionRequest],
     _ : ConnexionRequest
         Incomming request.
         Unnamed parameter not used.
-    exc: Exception
+    exc: HTTPException
         Raised exception.
 
     Returns
@@ -137,15 +143,14 @@ async def http_error_handler(_: Optional[ConnexionRequest],
 
     problem = {
         'title': exc.detail,
-        "detail": f"{exc.status_code}: {exc.detail}" if hasattr(exc, 'detail') else 'HTTPException',
+        "detail": f"{exc.status_code}: {exc.detail}",
     }
     return ConnexionResponse(status_code=exc.status_code,
                              body=json.dumps(problem),
                              content_type=ERROR_CONTENT_TYPE)
 
 
-async def jwt_error_handler(_: Optional[ConnexionRequest] = None,
-                            exc: Optional[Exception] = None) -> ConnexionResponse:
+async def jwt_error_handler(_: ConnexionRequest, __: JWTError) -> ConnexionResponse:
     """JWTException Error handler.
     
     Parameters
@@ -153,7 +158,7 @@ async def jwt_error_handler(_: Optional[ConnexionRequest] = None,
     _ : ConnexionRequest
         Incomming request.
         Unnamed parameter not used.
-    __: Exception
+    __: JWTError
         Raised exception.
         Unnamed parameter not used.
 
@@ -164,7 +169,7 @@ async def jwt_error_handler(_: Optional[ConnexionRequest] = None,
     """
     problem = {
         "title": "Unauthorized",
-        "detail": exc.detail if exc.detail else "No authorization token provided"
+        "detail": "No authorization token provided"
     }
 
     return ConnexionResponse(status_code=401,
@@ -172,7 +177,7 @@ async def jwt_error_handler(_: Optional[ConnexionRequest] = None,
                              content_type=ERROR_CONTENT_TYPE)
 
 
-async def problem_error_handler(_: Optional[ConnexionRequest], 
+async def problem_error_handler(_: ConnexionRequest,
                                 exc: exceptions.ProblemException) -> ConnexionResponse:
     """ProblemException Error handler.
     
@@ -180,7 +185,8 @@ async def problem_error_handler(_: Optional[ConnexionRequest],
     ----------
     request: ConnexionRequest
         Incomming request.
-    exc: Exception
+        Unnamed parameter not used.
+    exc: ProblemException
         Raised exception.
 
     Returns
@@ -209,8 +215,7 @@ async def problem_error_handler(_: Optional[ConnexionRequest],
                               status_code=exc.__dict__['status'],
                               content_type=ERROR_CONTENT_TYPE)
 
-async def content_size_handler(_: Optional[ConnexionRequest] = None,
-                            exc: Optional[Exception] = None) -> ConnexionResponse:
+async def content_size_handler(_: ConnexionRequest, exc: ContentSizeExceeded) -> ConnexionResponse:
     """Content size error handler.
     
     Parameters
@@ -218,9 +223,8 @@ async def content_size_handler(_: Optional[ConnexionRequest] = None,
     _ : ConnexionRequest
         Incomming request.
         Unnamed parameter not used.
-    exc: Exception
+    exc: ContentSizeExceeded
         Raised exception.
-        Unnamed parameter not used.
 
     Returns
     -------
