@@ -217,7 +217,7 @@ def start(params):
                     'protocol': 'https' if api_conf['https']['enabled'] else 'http',
                     'host': params['host'],
                     'port': params['port']},
-                strict_validation=False,
+                strict_validation=True,
                 validate_responses=False
                 )
 
