@@ -556,21 +556,22 @@ FilterOp opBuilderHelperRegexMatch(const Reference& targetField,
     const std::string failureTrace2 {fmt::format("[{}] -> Failure: Regex did not match", name)};
 
     // Return Op
-    return [=, targetField = targetField.jsonPath()](base::ConstEvent event) -> FilterResult
+    return [=, runState = buildCtx->runState(), targetField = targetField.jsonPath()](
+               base::ConstEvent event) -> FilterResult
     {
         const auto resolvedField {event->getString(targetField)};
         if (!resolvedField.has_value())
         {
-            return base::result::makeFailure(false, failureTrace1);
+            RETURN_FAILURE(runState, false, failureTrace1);
         }
 
         if (RE2::PartialMatch(resolvedField.value(), *regex_ptr))
         {
-            return base::result::makeSuccess(true, successTrace);
+            RETURN_SUCCESS(runState, true, successTrace);
         }
         else
         {
-            return base::result::makeFailure(false, failureTrace2);
+            RETURN_FAILURE(runState, false, failureTrace2);
         }
     };
 }
@@ -607,21 +608,22 @@ FilterOp opBuilderHelperRegexNotMatch(const Reference& targetField,
     const std::string failureTrace2 {fmt::format("[{}] -> Failure: Regex did match", name)};
 
     // Return Op
-    return [=, targetField = targetField.jsonPath()](base::ConstEvent event) -> FilterResult
+    return [=, runState = buildCtx->runState(), targetField = targetField.jsonPath()](
+               base::ConstEvent event) -> FilterResult
     {
         const auto resolvedField {event->getString(targetField)};
         if (!resolvedField.has_value())
         {
-            return base::result::makeFailure(false, failureTrace1);
+            RETURN_FAILURE(runState, false, failureTrace1);
         }
 
         if (!RE2::PartialMatch(resolvedField.value(), *regex_ptr))
         {
-            return base::result::makeSuccess(true, successTrace);
+            RETURN_SUCCESS(runState, true, successTrace);
         }
         else
         {
-            return base::result::makeFailure(false, failureTrace2);
+            RETURN_FAILURE(runState, false, failureTrace2);
         }
     };
 }
@@ -683,12 +685,13 @@ FilterOp opBuilderHelperIPCIDR(const Reference& targetField,
     const std::string failureTrace3 {fmt::format("[{}] -> Failure: IP address is not in CIDR", name)};
 
     // Return Op
-    return [=, targetField = targetField.jsonPath()](base::ConstEvent event) -> FilterResult
+    return [=, runState = buildCtx->runState(), targetField = targetField.jsonPath()](
+               base::ConstEvent event) -> FilterResult
     {
         const auto resolvedField {event->getString(targetField)};
         if (!resolvedField.has_value())
         {
-            return base::result::makeFailure(false, failureTrace1);
+            RETURN_FAILURE(runState, false, failureTrace1);
         }
 
         uint32_t ip {};
@@ -698,17 +701,18 @@ FilterOp opBuilderHelperIPCIDR(const Reference& targetField,
         }
         catch (std::exception& e)
         {
-            return base::result::makeFailure(
+            RETURN_FAILURE(
+                runState,
                 false,
                 failureTrace2 + fmt::format("'{}' could not be converted to int: {}", resolvedField.value(), e.what()));
         }
         if (net_lower <= ip && ip <= net_upper)
         {
-            return base::result::makeSuccess(true, successTrace);
+            RETURN_SUCCESS(runState, true, successTrace);
         }
         else
         {
-            return base::result::makeFailure(false, failureTrace3);
+            RETURN_FAILURE(runState, false, failureTrace3);
         }
     };
 }
