@@ -39,7 +39,7 @@ def send_initialization_events(agent, sender):
 
     sender.send_event(agent.startup_msg)
     # Wait 1 seconds to ensure that the message has ben sent before closing the socket.
-    time.sleep(3)
+    time.sleep(1)
 
 
 
@@ -84,6 +84,7 @@ def test_agent_pending_status(test_configuration, test_metadata, configure_local
 
     send_event_threads = []
     injectors = []
+    senders = []
 
     log_monitor.start(callback=generate_callback(KEY_UPDATE))
     assert log_monitor.callback_result
@@ -93,6 +94,7 @@ def test_agent_pending_status(test_configuration, test_metadata, configure_local
     for idx, agent in enumerate(agents):
         sender, injector = connect(agent, protocol = test_metadata['protocol'], manager_port = test_metadata['port'])
         injectors.append(injector)
+        senders.append(sender)
         send_event_threads.append(thread_executor.ThreadExecutor(send_initialization_events, {'agent': agent, 'sender': sender}))
 
 
@@ -100,15 +102,16 @@ def test_agent_pending_status(test_configuration, test_metadata, configure_local
     for thread in send_event_threads:
         thread.start()
 
-    time.sleep(3)
+    for index, sender in enumerate(senders):
+        time.sleep(1)
+
+    for agent in agents:
+        assert agent.get_connection_status() == 'pending'
+
 
     ## Wait until sender threads finish
     for thread in send_event_threads:
         thread.join()
-
-    # Check agent pending status for earch agent
-    for agent in agents:
-        assert agent.get_connection_status() == 'pending'
 
     # Close all threads
     for index, injector in enumerate(injectors):
