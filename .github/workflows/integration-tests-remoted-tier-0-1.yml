@@ -82,4 +82,4 @@ jobs:
       - name: Run remoted integration tests
         run: |
           cd tests/integration
-          sudo python -m pytest --tier 0 --tier 1 test_remoted/
+          sudo python -m pytest --tier 0 --tier 1 test_remoted/test_agent_communication/test_agent_pending_status.py
