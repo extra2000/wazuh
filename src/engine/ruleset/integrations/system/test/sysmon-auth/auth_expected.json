@@ -1,0 +1,565 @@
+[
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "action": "ssh_login",
+      "category": [
+        "authentication",
+        "session"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 21 21:54:44 localhost sshd[3402]: Accepted publickey for vagrant from 10.0.2.2 port 63673 ssh2: RSA 39:33:99:e9:a0:dc:f2:33:a3:e5:72:3b:7c:3a:56:84",
+      "outcome": "success",
+      "start": "2024-02-21T21:54:44.000Z",
+      "type": [
+        "access",
+        "allowed"
+      ]
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "Accepted publickey for vagrant from 10.0.2.2 port 63673 ssh2: RSA 39:33:99:e9:a0:dc:f2:33:a3:e5:72:3b:7c:3a:56:84",
+    "process": {
+      "name": "sshd",
+      "pid": 3402
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ],
+      "ip": [
+        "10.0.2.2"
+      ],
+      "user": [
+        "vagrant"
+      ]
+    },
+    "source": {
+      "address": "10.0.2.2",
+      "ip": "10.0.2.2",
+      "port": 63673
+    },
+    "user": {
+      "name": "vagrant"
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "action": "ssh_login",
+      "category": [
+        "authentication",
+        "session"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 23 00:13:35 localhost sshd[7483]: Accepted password for vagrant from 192.168.33.1 port 58803 ssh2",
+      "outcome": "success",
+      "start": "2024-02-23T00:13:35.000Z",
+      "type": [
+        "access",
+        "allowed"
+      ]
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "Accepted password for vagrant from 192.168.33.1 port 58803 ssh2",
+    "process": {
+      "name": "sshd",
+      "pid": 7483
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ],
+      "ip": [
+        "192.168.33.1"
+      ],
+      "user": [
+        "vagrant"
+      ]
+    },
+    "source": {
+      "address": "192.168.33.1",
+      "ip": "192.168.33.1",
+      "port": 58803
+    },
+    "user": {
+      "name": "vagrant"
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "action": "ssh_login",
+      "category": [
+        "authentication",
+        "session"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 21 21:56:12 localhost sshd[3430]: Invalid user test from 10.0.2.2",
+      "outcome": "failure",
+      "start": "2024-02-21T21:56:12.000Z",
+      "type": [
+        "access",
+        "denied"
+      ]
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "Invalid user test from 10.0.2.2",
+    "process": {
+      "name": "sshd",
+      "pid": 3430
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ],
+      "ip": [
+        "10.0.2.2"
+      ],
+      "user": [
+        "test"
+      ]
+    },
+    "source": {
+      "address": "10.0.2.2",
+      "ip": "10.0.2.2"
+    },
+    "user": {
+      "name": "test"
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "action": "ssh_login",
+      "category": [
+        "authentication",
+        "session"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 20 08:35:22 slave22 sshd[5774]: Failed password for root from 89.160.20.156 port 29160 ssh2",
+      "outcome": "failure",
+      "start": "2024-02-20T08:35:22.000Z",
+      "type": [
+        "access",
+        "denied"
+      ]
+    },
+    "host": {
+      "hostname": "slave22",
+      "id": "001"
+    },
+    "message": "Failed password for root from 89.160.20.156 port 29160 ssh2",
+    "process": {
+      "name": "sshd",
+      "pid": 5774
+    },
+    "related": {
+      "hosts": [
+        "slave22"
+      ],
+      "ip": [
+        "89.160.20.156"
+      ],
+      "user": [
+        "root"
+      ]
+    },
+    "source": {
+      "address": "89.160.20.156",
+      "ip": "89.160.20.156",
+      "port": 29160
+    },
+    "user": {
+      "name": "root"
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 21 23:35:33 localhost sudo: vagrant : TTY=pts/0 ; PWD=/home/vagrant ; USER=root ; COMMAND=/bin/ls",
+      "outcome": "success",
+      "start": "2024-02-21T23:35:33.000Z"
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "vagrant : TTY=pts/0 ; PWD=/home/vagrant ; USER=root ; COMMAND=/bin/ls",
+    "process": {
+      "name": "sudo"
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ]
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 19 15:30:04 slave22 sshd[18406]: Did not receive identification string from 89.160.20.156",
+      "outcome": "success",
+      "start": "2024-02-19T15:30:04.000Z"
+    },
+    "host": {
+      "hostname": "slave22",
+      "id": "001"
+    },
+    "message": "Did not receive identification string from 89.160.20.156",
+    "process": {
+      "name": "sshd",
+      "pid": 18406
+    },
+    "related": {
+      "hosts": [
+        "slave22"
+      ],
+      "ip": [
+        "89.160.20.156"
+      ]
+    },
+    "source": {
+      "address": "89.160.20.156",
+      "ip": "89.160.20.156"
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 23 00:08:48 localhost sudo: vagrant : TTY=pts/1 ; PWD=/home/vagrant ; USER=root ; COMMAND=/bin/cat /var/log/secure",
+      "outcome": "success",
+      "start": "2024-02-23T00:08:48.000Z"
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "vagrant : TTY=pts/1 ; PWD=/home/vagrant ; USER=root ; COMMAND=/bin/cat /var/log/secure",
+    "process": {
+      "name": "sudo"
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ]
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 24 00:13:02 precise32 sudo:      tsg : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/vagrant ; USER=root ; COMMAND=/bin/ls",
+      "outcome": "success",
+      "start": "2024-02-24T00:13:02.000Z"
+    },
+    "host": {
+      "hostname": "precise32",
+      "id": "001"
+    },
+    "message": "tsg : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/vagrant ; USER=root ; COMMAND=/bin/ls",
+    "process": {
+      "name": "sudo"
+    },
+    "related": {
+      "hosts": [
+        "precise32"
+      ]
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "category": [
+        "iam"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 22 11:47:05 localhost groupadd[6991]: new group: name=apache, GID=48",
+      "outcome": "success",
+      "start": "2024-02-22T11:47:05.000Z",
+      "type": [
+        "group",
+        "creation"
+      ]
+    },
+    "group": {
+      "id": "48",
+      "name": "apache"
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "new group: name=apache, GID=48",
+    "process": {
+      "name": "groupadd",
+      "pid": 6991
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ]
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "category": [
+        "iam"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 22 11:47:05 localhost useradd[6995]: new user: name=apache, UID=48, GID=48, home=/usr/share/httpd, shell=/sbin/nologin",
+      "outcome": "success",
+      "start": "2024-02-22T11:47:05.000Z",
+      "type": [
+        "user",
+        "creation"
+      ]
+    },
+    "group": {
+      "id": "48"
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "new user: name=apache, UID=48, GID=48, home=/usr/share/httpd, shell=/sbin/nologin",
+    "process": {
+      "name": "useradd",
+      "pid": 6995
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ],
+      "user": [
+        "apache"
+      ]
+    },
+    "user": {
+      "id": "48",
+      "name": "apache"
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Feb 22 12:53:50 localhost-machine sshd[10161]: error: PAM: User not known to the underlying authentication module for illegal user test from test.example.com",
+      "outcome": "success",
+      "start": "2024-02-22T12:53:50.000Z"
+    },
+    "host": {
+      "hostname": "localhost-machine",
+      "id": "001"
+    },
+    "message": "error: PAM: User not known to the underlying authentication module for illegal user test from test.example.com",
+    "process": {
+      "name": "sshd",
+      "pid": 10161
+    },
+    "related": {
+      "hosts": [
+        "localhost-machine"
+      ]
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  }
+]

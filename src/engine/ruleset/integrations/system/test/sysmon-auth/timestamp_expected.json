@@ -1,0 +1,57 @@
+[
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "original": "2019-06-14T10:40:20.912134 localhost sudo: pam_unix(sudo-i:session): session opened for user root by userauth3(uid=0)"
+    },
+    "host": {
+      "id": "001"
+    },
+    "wazuh": {
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "kind": "event",
+      "original": "2019-06-14T13:01:15.412+01:30 localhost pam: user nobody logged out.",
+      "start": "2019-06-14T11:31:15.412Z"
+    },
+    "host": {
+      "hostname": "localhost",
+      "id": "001"
+    },
+    "message": "user nobody logged out.",
+    "process": {
+      "name": "pam"
+    },
+    "related": {
+      "hosts": [
+        "localhost"
+      ]
+    },
+    "wazuh": {
+      "decoders": [
+        "syslog"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  }
+]

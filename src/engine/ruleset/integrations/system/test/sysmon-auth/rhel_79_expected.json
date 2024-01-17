@@ -6,95 +6,39 @@
       "type": "wazuh-agent"
     },
     "event": {
-      "dataset": "system-auth",
-      "kind": "event",
-      "module": "system",
-      "original": "Feb  9 21:19:40 precise32 sshd[8317]: subsystem request for sftp by user vagrant",
-      "outcome": "success",
-      "start": "2024-02-09T21:19:40.000Z"
-    },
-    "host": {
-      "hostname": "precise32",
-      "id": "001"
-    },
-    "message": "subsystem request for sftp by user vagrant",
-    "process": {
-      "name": "sshd",
-      "pid": 8317
-    },
-    "related": {
-      "hosts": [
-        "precise32"
-      ],
-      "user": [
-        "vagrant"
-      ]
-    },
-    "user": {
-      "name": "vagrant"
-    },
-    "wazuh": {
-      "decoders": [
-        "syslog",
-        "system-auth"
-      ],
-      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
-      "origin": "/test/auth.log",
-      "queue": 49,
-      "registered_ip": "any",
-      "source": "logcollector"
-    }
-  },
-  {
-    "agent": {
-      "id": "001",
-      "name": "wazuh-agent-1",
-      "type": "wazuh-agent"
-    },
-    "event": {
-      "action": "ssh_login",
       "category": [
-        "authentication",
-        "session"
+        "iam"
       ],
       "dataset": "system-auth",
       "kind": "event",
       "module": "system",
-      "original": "May 24 08:56:54 ubuntu2004 sshd[1238]: Accepted publickey for vagrant from 10.0.2.2 port 56902 ssh2: RSA SHA256:1M4RzhMyWuFS/86uPY/ce2prh/dVTHW7iD2RhpquOZA",
-      "outcome": "success",
-      "start": "2024-05-24T08:56:54.000Z",
+      "original": "Oct 11 09:10:48 plinode useradd[25494]: failed adding user 'aol', exit code: 4",
+      "outcome": "failure",
+      "start": "2024-10-11T09:10:48.000Z",
       "type": [
-        "access",
-        "allowed"
+        "user",
+        "creation"
       ]
     },
     "host": {
-      "hostname": "ubuntu2004",
+      "hostname": "plinode",
       "id": "001"
     },
-    "message": "Accepted publickey for vagrant from 10.0.2.2 port 56902 ssh2: RSA SHA256:1M4RzhMyWuFS/86uPY/ce2prh/dVTHW7iD2RhpquOZA",
+    "message": "failed adding user 'aol', exit code: 4",
     "process": {
-      "name": "sshd",
-      "pid": 1238
+      "name": "useradd",
+      "pid": 25494
     },
     "related": {
       "hosts": [
-        "ubuntu2004"
-      ],
-      "ip": [
-        "10.0.2.2"
+        "plinode"
       ],
       "user": [
-        "vagrant"
+        "aol"
       ]
     },
-    "source": {
-      "address": "10.0.2.2",
-      "ip": "10.0.2.2",
-      "port": 56902
-    },
     "user": {
-      "name": "vagrant"
+      "name": "aol"
     },
     "wazuh": {
       "decoders": [
@@ -116,38 +60,79 @@
     },
     "event": {
       "category": [
-        "authentication",
-        "session"
+        "iam"
       ],
       "dataset": "system-auth",
       "kind": "event",
       "module": "system",
-      "original": "Feb  9 21:24:37 precise32 sshd[8302]: pam_unix(sshd:session): session closed for user vagrant",
+      "original": "Oct 14 16:49:59 dlig userdel[1619336]: delete user 'jce'",
       "outcome": "success",
-      "start": "2024-02-09T21:24:37.000Z",
+      "start": "2024-10-14T16:49:59.000Z",
       "type": [
-        "end"
+        "user",
+        "deletion"
       ]
     },
     "host": {
-      "hostname": "precise32",
+      "hostname": "dlig",
       "id": "001"
     },
-    "message": "pam_unix(sshd:session): session closed for user vagrant",
+    "message": "delete user 'jce'",
     "process": {
-      "name": "sshd",
-      "pid": 8302
+      "name": "userdel",
+      "pid": 1619336
     },
     "related": {
       "hosts": [
-        "precise32"
-      ],
-      "user": [
-        "vagrant"
+        "dlig"
       ]
     },
-    "user": {
-      "name": "vagrant"
+    "wazuh": {
+      "decoders": [
+        "syslog",
+        "system-auth"
+      ],
+      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+      "origin": "/test/auth.log",
+      "queue": 49,
+      "registered_ip": "any",
+      "source": "logcollector"
+    }
+  },
+  {
+    "agent": {
+      "id": "001",
+      "name": "wazuh-agent-1",
+      "type": "wazuh-agent"
+    },
+    "event": {
+      "category": [
+        "iam"
+      ],
+      "dataset": "system-auth",
+      "kind": "event",
+      "module": "system",
+      "original": "Oct 19 12:54:40 plielk0 usermod[7730]: change user 'acris' expiration from '2001-01-01' to '2243-10-16'",
+      "outcome": "success",
+      "start": "2024-10-19T12:54:40.000Z",
+      "type": [
+        "user",
+        "change"
+      ]
+    },
+    "host": {
+      "hostname": "plielk0",
+      "id": "001"
+    },
+    "message": "change user 'acris' expiration from '2001-01-01' to '2243-10-16'",
+    "process": {
+      "name": "usermod",
+      "pid": 7730
+    },
+    "related": {
+      "hosts": [
+        "plielk0"
+      ]
     },
     "wazuh": {
       "decoders": [
