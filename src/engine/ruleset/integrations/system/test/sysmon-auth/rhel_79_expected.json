@@ -1,149 +1,161 @@
 [
   {
-    "agent": {
-      "id": "001",
-      "name": "wazuh-agent-1",
-      "type": "wazuh-agent"
-    },
-    "event": {
-      "category": [
-        "iam"
-      ],
-      "dataset": "system-auth",
-      "kind": "event",
-      "module": "system",
-      "original": "Oct 11 09:10:48 plinode useradd[25494]: failed adding user 'aol', exit code: 4",
-      "outcome": "failure",
-      "start": "2024-10-11T09:10:48.000Z",
-      "type": [
-        "user",
-        "creation"
-      ]
-    },
-    "host": {
-      "hostname": "plinode",
-      "id": "001"
-    },
-    "message": "failed adding user 'aol', exit code: 4",
-    "process": {
-      "name": "useradd",
-      "pid": 25494
-    },
-    "related": {
-      "hosts": [
-        "plinode"
-      ],
-      "user": [
-        "aol"
-      ]
-    },
-    "user": {
-      "name": "aol"
-    },
-    "wazuh": {
-      "decoders": [
-        "syslog",
-        "system-auth"
-      ],
-      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
-      "origin": "/test/auth.log",
-      "queue": 49,
-      "registered_ip": "any",
-      "source": "logcollector"
-    }
+      "agent": {
+          "id": "001",
+          "name": "wazuh-agent-1",
+          "type": "wazuh-agent"
+      },
+      "event": {
+          "category": [
+              "iam"
+          ],
+          "dataset": "system-auth",
+          "kind": "event",
+          "module": "system",
+          "original": "Oct 11 09:10:48 plinode useradd[25494]: failed adding user 'aol', exit code: 4",
+          "outcome": "failure",
+          "start": "2024-10-11T09:10:48.000Z",
+          "type": [
+              "user",
+              "creation"
+          ]
+      },
+      "host": {
+          "hostname": "plinode",
+          "id": "001"
+      },
+      "message": "failed adding user 'aol', exit code: 4",
+      "process": {
+          "name": "useradd",
+          "pid": 25494
+      },
+      "related": {
+          "hosts": [
+              "plinode"
+          ],
+          "user": [
+              "aol"
+          ]
+      },
+      "user": {
+          "name": "aol"
+      },
+      "wazuh": {
+          "decoders": [
+              "syslog",
+              "system-auth"
+          ],
+          "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+          "origin": "/test/auth.log",
+          "queue": 49,
+          "registered_ip": "any",
+          "source": "logcollector"
+      }
   },
   {
-    "agent": {
-      "id": "001",
-      "name": "wazuh-agent-1",
-      "type": "wazuh-agent"
-    },
-    "event": {
-      "category": [
-        "iam"
-      ],
-      "dataset": "system-auth",
-      "kind": "event",
-      "module": "system",
-      "original": "Oct 14 16:49:59 dlig userdel[1619336]: delete user 'jce'",
-      "outcome": "success",
-      "start": "2024-10-14T16:49:59.000Z",
-      "type": [
-        "user",
-        "deletion"
-      ]
-    },
-    "host": {
-      "hostname": "dlig",
-      "id": "001"
-    },
-    "message": "delete user 'jce'",
-    "process": {
-      "name": "userdel",
-      "pid": 1619336
-    },
-    "related": {
-      "hosts": [
-        "dlig"
-      ]
-    },
-    "wazuh": {
-      "decoders": [
-        "syslog",
-        "system-auth"
-      ],
-      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
-      "origin": "/test/auth.log",
-      "queue": 49,
-      "registered_ip": "any",
-      "source": "logcollector"
-    }
+      "agent": {
+          "id": "001",
+          "name": "wazuh-agent-1",
+          "type": "wazuh-agent"
+      },
+      "event": {
+          "category": [
+              "iam"
+          ],
+          "dataset": "system-auth",
+          "kind": "event",
+          "module": "system",
+          "original": "Oct 14 16:49:59 dlig userdel[1619336]: delete user 'jce'",
+          "outcome": "success",
+          "start": "2024-10-14T16:49:59.000Z",
+          "type": [
+              "user",
+              "deletion"
+          ]
+      },
+      "host": {
+          "hostname": "dlig",
+          "id": "001"
+      },
+      "message": "delete user 'jce'",
+      "process": {
+          "name": "userdel",
+          "pid": 1619336
+      },
+      "related": {
+          "hosts": [
+              "dlig"
+          ],
+          "user": [
+              "jce"
+          ]
+      },
+      "user": {
+          "name": "jce"
+      },
+      "wazuh": {
+          "decoders": [
+              "syslog",
+              "system-auth"
+          ],
+          "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+          "origin": "/test/auth.log",
+          "queue": 49,
+          "registered_ip": "any",
+          "source": "logcollector"
+      }
   },
   {
-    "agent": {
-      "id": "001",
-      "name": "wazuh-agent-1",
-      "type": "wazuh-agent"
-    },
-    "event": {
-      "category": [
-        "iam"
-      ],
-      "dataset": "system-auth",
-      "kind": "event",
-      "module": "system",
-      "original": "Oct 19 12:54:40 plielk0 usermod[7730]: change user 'acris' expiration from '2001-01-01' to '2243-10-16'",
-      "outcome": "success",
-      "start": "2024-10-19T12:54:40.000Z",
-      "type": [
-        "user",
-        "change"
-      ]
-    },
-    "host": {
-      "hostname": "plielk0",
-      "id": "001"
-    },
-    "message": "change user 'acris' expiration from '2001-01-01' to '2243-10-16'",
-    "process": {
-      "name": "usermod",
-      "pid": 7730
-    },
-    "related": {
-      "hosts": [
-        "plielk0"
-      ]
-    },
-    "wazuh": {
-      "decoders": [
-        "syslog",
-        "system-auth"
-      ],
-      "location": "[001] (wazuh-agent-1) any->/test/auth.log",
-      "origin": "/test/auth.log",
-      "queue": 49,
-      "registered_ip": "any",
-      "source": "logcollector"
-    }
+      "agent": {
+          "id": "001",
+          "name": "wazuh-agent-1",
+          "type": "wazuh-agent"
+      },
+      "event": {
+          "category": [
+              "iam"
+          ],
+          "dataset": "system-auth",
+          "kind": "event",
+          "module": "system",
+          "original": "Oct 19 12:54:40 plielk0 usermod[7730]: change user 'acris' expiration from '2001-01-01' to '2243-10-16'",
+          "outcome": "success",
+          "start": "2024-10-19T12:54:40.000Z",
+          "type": [
+              "user",
+              "change"
+          ]
+      },
+      "host": {
+          "hostname": "plielk0",
+          "id": "001"
+      },
+      "message": "change user 'acris' expiration from '2001-01-01' to '2243-10-16'",
+      "process": {
+          "name": "usermod",
+          "pid": 7730
+      },
+      "related": {
+          "hosts": [
+              "plielk0"
+          ],
+          "user": [
+              "acris"
+          ]
+      },
+      "user": {
+          "name": "acris"
+      },
+      "wazuh": {
+          "decoders": [
+              "syslog",
+              "system-auth"
+          ],
+          "location": "[001] (wazuh-agent-1) any->/test/auth.log",
+          "origin": "/test/auth.log",
+          "queue": 49,
+          "registered_ip": "any",
+          "source": "logcollector"
+      }
   }
 ]

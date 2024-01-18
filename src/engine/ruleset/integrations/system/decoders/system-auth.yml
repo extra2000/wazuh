@@ -92,10 +92,28 @@ normalize:
       - process.name: sudo
     parse|message:
       - "<user.name> : <_system.auth.sudo.error> ; TTY=tty<~/literal/\\/>?<~/literal/s><_system.process.tty.char_device.major> ; PWD=<_system.auth.sudo.pwd> ; USER=<user.effective.name> ; COMMAND=<_system.auth.sudo.command>"
+      - "<user.name> : TTY=<_system.auth.sudo.tty> ; PWD=<_system.auth.sudo.pwd> ; USER=<user.effective.name> ; COMMAND=<_system.auth.sudo.command>"
       - "<user.name> : TTY=tty<~/literal/\\/>?<~/literal/s><_system.process.tty.char_device.major> ; PWD=<_system.auth.sudo.pwd> ; USER=<user.effective.name> ; COMMAND=<_system.auth.sudo.command>"
     map:
       - event.category: array_append(process)
       - event.type: array_append(start)
+
+  - check:
+      - message: contains("session opened")
+    map:
+      - event.action: logged-on
+
+  - check:
+      - message: contains("session closed")
+    map:
+      - event.action: logged-off
+
+  - check:
+      - message: contains(pam_)
+    parse|message:
+      - "pam_unix\\(<~>:<~>\\): authentication <_system.auth.pam.session.action>; logname=<_system.auth.pam.foruser.name>?<~/literal/> uid=<user.id>?<~/literal/> euid=<user.effective.id>?<~/literal/> tty=<_system.auth.pam.tty>?<~/literal/> ruser=<_system.auth.pam.remote.user>?<~/literal/> rhost=<source.ip>?<~/literal/>  user=<user.name>?<~/literal/>"
+    map:
+      - event.category: array_append(authentication)
 
   - check:
       - message: contains(pam_)
@@ -104,9 +122,8 @@ normalize:
       - "pam_unix\\(<~>:<~>\\): session <_system.auth.pam.session.action> for user <_system.auth.pam.foruser.name> by \\(uid=<user.id>\\)"
       - "pam_unix\\(<~>:<~>\\): session <_system.auth.pam.session.action> for user <_system.auth.pam.foruser.name>"
       - "pam_succeed_if\\(<~>:<~>\\): requirement <~> not met by user <user.name>"
-      - "pam_unix\\(<~>:<~>\\): authentication <_system.auth.pam.session.action>; logname=<_system.auth.pam.foruser.name>?<~/literal/> uid=<user.id>?<~/literal/> euid=<user.effective.id>?<~/literal/> tty=<_system.auth.pam.tty>?<~/literal/> ruser=<_system.auth.pam.remote.user>?<~/literal/> rhost=<source.ip>?<~/literal/>  user=<user.name>?<~/literal/>"
     map:
-      - event.category: array_append(authentication, session)
+      - event.category: array_append(session)
 
   - check:
       - message: contains(PAM)
@@ -140,6 +157,11 @@ normalize:
       - 'new user: name=<user.name>, UID=<user.id>, GID=<group.id>, home=<_system.auth.useradd.home>, shell=<_system.auth.useradd.shell>(?,<~>)'
       - 'group added to <file.name>: name=<group.name>(?, GID=<group.id>)'
       - <_system.auth.event.outcome> adding user '<user.name>'(?,<~>)
+
+  - check: $process.name == userdel OR $process.name == usermod
+    parse|message:
+      - <~> user '<user.name>'
+      - <~> user '<user.name>'<~>
 
   - check: $_system.auth.event.outcome == failed OR $_system.auth.pam.session.action == failure
     map:
